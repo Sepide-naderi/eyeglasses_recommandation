@@ -123,9 +123,9 @@ def predict_faceshape(model, image_tensor):
 
 def recommend_glasses(faceshape):
     recommendations = {
-        'heart': 'Bottom-heavy frames',
+        'heart': 'Bottom-heavy frames(thicker lower)',
         'long': 'Cat-eye or oval frames',
-        'oval': 'Almost any frame shape',
+        'oval': 'Almost any frame shape but avoid frames that are too large or too small',
         'round': 'Square or Rectangular glasses',
         'square': 'Round or Oval glasses'
     }
@@ -149,3 +149,13 @@ if uploaded_file and model_choice:
 
     st.success(f"**Predicted Face Shape:** {faceshape}")
     st.info(f"**Recommended Glasses:** {glasses}")
+
+    # ---- Display Glasses Image ----
+    glasses_image_path = f"glasses/{faceshape}.png"
+
+    try:
+        glasses_img = Image.open(glasses_image_path)
+        st.image(glasses_img, caption=f"{faceshape.capitalize()} Glasses Example", use_column_width=True)
+    except FileNotFoundError:
+        st.warning("No image available for this face shape.")
+
