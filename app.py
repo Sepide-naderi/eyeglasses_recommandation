@@ -92,10 +92,10 @@ class FaceShapeCNN(nn.Module):
 def load_model(model_choice):
     if model_choice == "FaceshapeCNN":
         model = FaceShapeCNN(num_classes=5)
-        model.load_state_dict(torch.load('model_epoch_100.pkt', map_location='cpu'))
+        model.load_state_dict(torch.load('model_epoch_final_cw_106.pkt', map_location='cpu'))
     else:  # ResNet
         model = ResNet18_Faceshape(num_classes=5)
-        model.load_state_dict(torch.load('model_resnet_epoch_42.pth', map_location='cpu'))
+        model.load_state_dict(torch.load('model_resnet_epoch_final_109.pth', map_location='cpu'))
 
     model.eval()
     return model
@@ -137,25 +137,27 @@ st.write("Upload your photo and choose a model to analyze your face shape.")
 uploaded_file = st.file_uploader("Upload a face image", type=["jpg", "jpeg", "png"])
 model_choice = st.selectbox("Choose model", ["FaceshapeCNN", "ResNet"])
 
-if uploaded_file and model_choice:
-    image = Image.open(uploaded_file).convert('RGB')
-    st.image(image, caption="Uploaded Image", use_column_width=True)
+if uploaded_file is not None:
+    with st.spinner("Analyzing image..."):
+        image = Image.open(uploaded_file).convert('RGB')
+        st.image(image, caption="Uploaded Image", use_container_width=True)
 
-    model = load_model(model_choice)
-    image_tensor = preprocess_image(image)
+        model = load_model(model_choice)
+        image_tensor = preprocess_image(image)
 
-    faceshape = predict_faceshape(model, image_tensor)
-    glasses = recommend_glasses(faceshape)
+        faceshape = predict_faceshape(model, image_tensor)
+        glasses = recommend_glasses(faceshape)
 
-    st.success(f"**Predicted Face Shape:** {faceshape}")
-    st.info(f"**Recommended Glasses:** {glasses}")
+        st.success(f"**Predicted Face Shape:** {faceshape}")
+        st.info(f"**Recommended Glasses:** {glasses}")
 
-    # ---- Display Glasses Image ----
-    glasses_image_path = f"glasses/{faceshape}.png"
+        # Display glasses image
+        glasses_image_path = f"glasses/{faceshape}.png"
+        try:
+            glasses_img = Image.open(glasses_image_path)
+            st.image(glasses_img, caption=f"{faceshape.capitalize()} Glasses Example", use_column_width=True)
+        except FileNotFoundError:
+            st.warning("No image available for this face shape.")
 
-    try:
-        glasses_img = Image.open(glasses_image_path)
-        st.image(glasses_img, caption=f"{faceshape.capitalize()} Glasses Example", use_column_width=True)
-    except FileNotFoundError:
-        st.warning("No image available for this face shape.")
+
 
